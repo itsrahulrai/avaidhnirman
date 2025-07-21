@@ -1,13 +1,16 @@
-'use client'
+// app/login/page.tsx
+import { getServerSession } from "next-auth";
+import { authOptions } from "@lib/authOptions";
+
+import { redirect } from "next/navigation";
 import BlogAdminLogin from '@/component/BlogAdminLogin'
-import React from 'react'
 
-function page() {
-  return (
-    <>
-    <BlogAdminLogin />
-    </>
-  )
+export default async function LoginPage() {
+  const session = await getServerSession(authOptions);
+
+  if (session) {
+    redirect("/admin/dashboard"); // Already logged in → redirect to dashboard
+  }
+
+  return <BlogAdminLogin />;
 }
-
-export default page

@@ -1,4 +1,4 @@
-'use client'
+'use client';
 import Link from "next/link";
 import { useState, ChangeEvent, FormEvent } from "react";
 
@@ -35,33 +35,35 @@ export default function AddCategory() {
       parentCategory,
     };
     console.log(categoryData);
-
-    // Example: Call an API or show a success message
+    // You can replace this with your API call or toast
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 p-4 md:p-10">
-      <div className="max-w-4xl mx-auto">
-        <div className="bg-white rounded shadow p-6 mb-6">
-          <h1 className="text-2xl font-bold mb-1">Add Category</h1>
-          <p className="text-gray-600 text-sm">Create a new blog category</p>
-        </div>
+    <div className="min-h-screen bg-gray-50 py-10 px-4">
+      <div className="max-w-3xl mx-auto">
+        {/* Page Header */}
+       
 
+        {/* Form */}
         <form
           onSubmit={handleSubmit}
-          className="bg-white rounded shadow p-6 space-y-4"
+          className="bg-white shadow-md rounded-xl p-6 space-y-6 border border-gray-100"
         >
+           <div className="mb-6">
+          <h1 className="text-3xl font-bold text-gray-900">Add New Category</h1>
+          <p className="mt-1 text-gray-600 text-sm">Create a new blog category to organize your posts.</p>
+        </div>
           {/* Category Name */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              Category Name
+              Category Name <span className="text-red-500">*</span>
             </label>
             <input
               type="text"
               placeholder="e.g. Technology"
               value={categoryName}
               onChange={handleCategoryNameChange}
-              className="w-full border border-gray-300 rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-orange-400"
+              className="w-full px-4 py-2 rounded-md border border-gray-300 focus:ring-2 focus:ring-orange-500 focus:outline-none"
               required
             />
           </div>
@@ -69,14 +71,14 @@ export default function AddCategory() {
           {/* Slug */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
-              Slug
+              Slug <span className="text-red-500">*</span>
             </label>
             <input
               type="text"
               placeholder="e.g. technology"
               value={slug}
               onChange={handleSlugChange}
-              className="w-full border border-gray-300 rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-orange-400"
+              className="w-full px-4 py-2 rounded-md border border-gray-300 focus:ring-2 focus:ring-orange-500 focus:outline-none"
               required
             />
           </div>
@@ -89,7 +91,7 @@ export default function AddCategory() {
             <select
               value={parentCategory}
               onChange={(e) => setParentCategory(e.target.value)}
-              className="w-full border border-gray-300 rounded px-4 py-2 focus:outline-none focus:ring-2 focus:ring-orange-400"
+              className="w-full px-4 py-2 rounded-md border border-gray-300 focus:ring-2 focus:ring-orange-500 focus:outline-none"
             >
               <option value="">None</option>
               <option value="technology">Technology</option>
@@ -99,16 +101,16 @@ export default function AddCategory() {
           </div>
 
           {/* Buttons */}
-          <div className="flex gap-4 justify-end pt-4">
+          <div className="flex justify-end gap-3 pt-4">
             <Link
               href="/admin/blogs-category"
-              className="bg-gray-200 text-gray-800 px-4 py-2 rounded hover:bg-gray-300"
+              className="inline-block px-4 py-2 rounded-md bg-gray-200 text-gray-800 hover:bg-gray-300 transition"
             >
               Cancel
             </Link>
             <button
               type="submit"
-              className="bg-orange-600 text-white px-4 py-2 rounded hover:bg-orange-700"
+              className="inline-block px-5 py-2 rounded-md bg-orange-600 text-white hover:bg-orange-700 transition"
             >
               Save Category
             </button>

@@ -1,29 +1,24 @@
-import { getToken } from 'next-auth/jwt';
-import { NextResponse } from 'next/server';
-import type { NextRequest } from 'next/server';
+import { getToken } from "next-auth/jwt";
+import { NextResponse } from "next/server";
+import type { NextRequest } from "next/server";
 
-export async function middleware(req: NextRequest) {
-  const token = await getToken({
-    req,
-    secret: process.env.NEXTAUTH_SECRET,
-  });
+export async function middleware(request: NextRequest) {
+  const token = await getToken({ req: request, secret: process.env.NEXTAUTH_SECRET });
 
-  const { pathname } = req.nextUrl;
-  const isAuthPage = pathname === 'login';
+  const isAuthPage = request.nextUrl.pathname === "/login";
 
-  // ✅ If user is logged in and trying to access login page, redirect to dashboard
-  if (isAuthPage && token) {
-    return NextResponse.redirect(new URL('dashboard', req.url));
+  if (!token && request.nextUrl.pathname.startsWith("/admin")) {
+    return NextResponse.redirect(new URL("/login", request.url));
   }
 
-  // ❌ If user is not logged in and tries to access /admin routes, redirect to login
-  if (!token && pathname.startsWith('/admin')) {
-    return NextResponse.redirect(new URL('login', req.url));
+  if (token && isAuthPage) {
+    return NextResponse.redirect(new URL("/admin/dashboard", request.url));
   }
 
   return NextResponse.next();
 }
 
+// Protect only specific paths
 export const config = {
-  matcher: ['/admin/:path*'],
+  matcher: ["/admin/:path*", "/login"],
 };
