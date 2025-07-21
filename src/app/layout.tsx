@@ -1,7 +1,8 @@
 import type { Metadata } from "next";
 import "./globals.css";
 import MainLayout from "@/component/MainLayout";
-
+import { Toaster } from 'react-hot-toast';
+import SessionWrapper from "@/component/SessionWrapper";
 
 export const metadata: Metadata = {
   title: "Avaidh Nirma Virodhi Morcha",
@@ -16,7 +17,10 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body>
-        <MainLayout>{children}</MainLayout>
+        <SessionWrapper>
+          <Toaster position="top-center" />
+          <MainLayout>{children}</MainLayout>
+        </SessionWrapper>
       </body>
     </html>
   );

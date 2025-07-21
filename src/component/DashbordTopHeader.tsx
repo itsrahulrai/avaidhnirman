@@ -2,8 +2,9 @@
 import React, { useState } from 'react';
 import { ChevronDown, Search, Bell, Settings, User, LogOut } from 'lucide-react';
 import Image from 'next/image';
+import { signOut } from 'next-auth/react';
 function DashbordTopHeader() {
-      const [isUserDropdownOpen, setIsUserDropdownOpen] = useState(false);
+    const [isUserDropdownOpen, setIsUserDropdownOpen] = useState(false);
     return (
         <>
             <header className="bg-white px-4 py-3 shadow-lg ">
@@ -55,12 +56,16 @@ function DashbordTopHeader() {
                                         Settings
                                     </a>
                                     <hr className="my-2" />
-                                    <a href="#" className="flex items-center px-4 py-2 text-sm text-gray-700 hover:bg-gray-50">
+                                    <button
+                                        onClick={() => signOut({ callbackUrl: '/login' })}
+                                        className="flex items-center w-full px-4 py-2 text-sm text-left text-gray-700 hover:bg-gray-50"
+                                    >
                                         <LogOut className="w-4 h-4 mr-2" />
                                         Logout
-                                    </a>
+                                    </button>
                                 </div>
                             )}
+
                         </div>
                     </div>
                 </div>

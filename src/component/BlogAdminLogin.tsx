@@ -1,44 +1,57 @@
 'use client';
 
 import React, { useState } from 'react';
-import type { NextPage } from 'next';
+import { signIn } from 'next-auth/react';
+import { useRouter } from 'next/navigation';
 import Head from 'next/head';
-import { LockClosedIcon } from '@heroicons/react/24/solid'; // Optional icon
+import { LockClosedIcon } from '@heroicons/react/24/solid';
+import toast from 'react-hot-toast';
 
-const BlogAdminLogin: NextPage = () => {
-  const [formData, setFormData] = useState({
-    email: '',
-    password: ''
-  });
+const BlogAdminLogin = () => {
+  const router = useRouter();
+  const [formData, setFormData] = useState({ email: '', password: '' });
+
+   console.log("🔍 signIn response", formData);
+  
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const { name, value } = e.target;
-    setFormData(prev => ({ ...prev, [name]: value }));
+    setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log('Login attempt:', formData);
-    // TODO: Add real login logic here
+
+    const res = await signIn('credentials', {
+      redirect: false,
+      email: formData.email,
+      password: formData.password,
+    });
+
+      console.log("🔍 signIn response", res);
+
+    if (res?.ok) {
+      toast.success('Login successful!');
+      router.push('/admin/dashboard');
+    } else {
+      toast.error('Invalid email or password');
+    }
   };
 
   return (
     <>
       <Head>
         <title>Blog Admin Login</title>
-        <meta name="description" content="Secure login for blog admin panel" />
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <link rel="icon" href="/favicon.ico" />
       </Head>
 
       <main className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 px-4">
         <div className="w-full max-w-md bg-white shadow-2xl rounded-2xl p-8 sm:p-10 backdrop-blur-sm bg-opacity-95">
           <div className="flex flex-col items-center mb-8">
-            <div className="bg-indigo-100 text-indigo-600 rounded-full p-3 mb-3">
+            <div className="bg-indigo-100 text-[#1A4767] rounded-full p-3 mb-3">
               <LockClosedIcon className="w-6 h-6" />
             </div>
-            <h1 className="text-2xl font-semibold text-gray-800">Admin Dashboard</h1>
-            <p className="text-sm text-gray-500 mt-1">Please sign in to your account</p>
+            <h1 className="text-2xl font-semibold text-gray-800">Sign In</h1>
+            <p className="text-sm text-gray-500 mt-1">Please enter your credentials to access the dashboard.</p>
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-6">
@@ -76,17 +89,11 @@ const BlogAdminLogin: NextPage = () => {
 
             <button
               type="submit"
-              className="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-3 px-4 rounded-lg transition duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+              className="w-full bg-[#1A4767] hover:bg-[#F54900] text-white font-bold py-3 px-4 rounded-lg transition duration-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
             >
-              Sign In
+              Login
             </button>
           </form>
-
-          <div className="mt-6 text-center">
-            <a href="#" className="text-sm text-indigo-600 hover:text-indigo-800 transition">
-              Forgot your password?
-            </a>
-          </div>
         </div>
       </main>
     </>
