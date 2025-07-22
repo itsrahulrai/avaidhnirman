@@ -1,152 +1,159 @@
-'use client'
+"use client";
 
-import React, { useState } from 'react';
-import { Plus, Eye, Edit, Trash2, MoreVertical } from 'lucide-react';
-import Link from 'next/link';
+import React, { useEffect, useState } from "react";
+import { Plus, Eye, Edit, Trash2 } from "lucide-react";
+import Link from "next/link";
+import toast from "react-hot-toast";
+import Swal from 'sweetalert2';
+import 'sweetalert2/dist/sweetalert2.min.css';
+import { useRouter } from "next/navigation";
 
-interface BlogPost {
-  id: number;
-  title: string;
+interface Category {
+  _id: string;
+  categoryName: string;
   slug: string;
-  category: string;
-  date: string;
-  status: 'Draft' | 'Published' | 'Archived';
-  image?: string;
+  createdAt: string;
+  isActive: boolean;
 }
 
 const BlogCategory = () => {
-  const [posts, setPosts] = useState<BlogPost[]>([
-    {
-      id: 1,
-      title: 'Coffee Machine',
-      slug: 'coffee-machine',
-      category: 'Coffee Machine',
-      date: 'Thu Jul 03 2025',
-      status: 'Draft',
-      image: '/api/placeholder/40/40'
-    },
-    {
-      id: 2,
-      title: 'Best Brewing Methods',
-      slug: 'best-brewing-methods',
-      category: 'Coffee Tips',
-      date: 'Wed Jul 02 2025',
-      status: 'Published',
-      image: '/api/placeholder/40/40'
-    },
-    {
-      id: 3,
-      title: 'Espresso Guide',
-      slug: 'espresso-guide',
-      category: 'Coffee Machine',
-      date: 'Tue Jul 01 2025',
-      status: 'Published',
-      image: '/api/placeholder/40/40'
-    }
-  ]);
+  const router = useRouter();
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 5;
 
-  const [showAddCategory, setShowAddCategory] = useState(false);
-  const [newCategory, setNewCategory] = useState('');
-  const [categories] = useState(['Coffee Machine', 'Coffee Tips', 'Reviews', 'Tutorials']);
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const res = await fetch("/api/categories");
+        const json = await res.json();
+        if (json.success) {
+          setCategories(json.data);
+        }
+      } catch (err) {
+        console.error("Error fetching categories:", err);
+      }
+    };
+    fetchCategories();
+  }, []);
 
-  const handleAddCategory = () => {
-    if (newCategory.trim()) {
-      // In a real app, you'd save this to your backend
-      console.log('Adding category:', newCategory);
-      setNewCategory('');
-      setShowAddCategory(false);
-    }
-  };
 
-  const handleDeletePost = (id: number) => {
-    setPosts(posts.filter(post => post.id !== id));
-  };
 
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'Draft':
-        return 'bg-yellow-100 text-yellow-800';
-      case 'Published':
-        return 'bg-green-100 text-green-800';
-      case 'Archived':
-        return 'bg-gray-100 text-gray-800';
-      default:
-        return 'bg-gray-100 text-gray-800';
+  const handleDeleteCategory = async (id: string) => {
+    const result = await Swal.fire({
+      title: 'Are you sure?',
+      text: 'This action will permanently delete the category.',
+      icon: 'warning',
+      showCancelButton: true,
+      confirmButtonColor: '#d33',
+      cancelButtonColor: '#3085d6',
+      confirmButtonText: 'Yes, delete it!',
+    });
+
+    if (!result.isConfirmed) return;
+
+    try {
+      const res = await fetch(`/api/categories/${id}`, {
+        method: 'DELETE',
+      });
+
+      const data = await res.json();
+
+      if (data.success) {
+        toast.success("Category deleted successfully!");
+        setCategories(categories.filter((category) => category._id !== id));
+      } else {
+        toast.error(data.message || "Failed to delete category.");
+      }
+    } catch (err) {
+      console.error("Error deleting category:", err);
+      toast.error("An error occurred. Please try again.");
     }
   };
+
+
+
+  const paginatedData = categories.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
+  const totalPages = Math.ceil(categories.length / itemsPerPage);
 
   return (
     <div className="min-h-screen bg-gray-50 p-4 sm:p-6 lg:p-8">
       <div className="max-w-8xl mx-auto">
-        {/* Header */}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 mb-6">
-          <div className="p-6">
-            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
-              <div>
-                <h1 className="text-2xl font-semibold text-gray-900">Category</h1>
-                <p className="text-gray-600 mt-1">Manage your blog category</p>
-              </div>
-              <div className="mt-4 sm:mt-0">
-                <Link
-                  href='/admin/add-category'
-                  className="inline-flex items-center px-4 py-2 bg-orange-600 text-white text-sm font-medium rounded-lg hover:bg-orange-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 transition-colors"
-                >
-                  {/* <Plus className="w-4 h-4 mr-2" /> */}
-                  Add New
-                </Link>
-              </div>
-            </div>
+
+      <div className="bg-white rounded-lg shadow-sm border border-gray-200 mb-6">
+        <div className="p-6 flex flex-col sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <h1 className="text-2xl font-semibold text-gray-900">Category</h1>
+            <p className="text-gray-600 mt-1">Manage your blog category</p>
           </div>
+          <Link
+            href="/admin/add-category"
+            className="inline-flex items-center gap-2 px-5 py-2.5 bg-orange-600 hover:bg-orange-700 text-white text-sm font-medium rounded-full transition duration-200 shadow-sm"
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
+            </svg>
+            Add Category
+          </Link>
         </div>
+      </div>
 
-
-        {/* Blog Posts Table */}
         <div className="bg-white rounded-lg shadow-sm border border-gray-200">
           {/* Desktop Table */}
           <div className="hidden md:block">
             <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead>
-                  <tr className="border-b border-gray-200">
-                    <th className="text-left py-4 px-6 font-semibold text-gray-900">Title</th>
-                    <th className="text-left py-4 px-6 font-semibold text-gray-900">Category</th>
-                    <th className="text-left py-4 px-6 font-semibold text-gray-900">Date</th>
-                    <th className="text-left py-4 px-6 font-semibold text-gray-900">Status</th>
-                    <th className="text-left py-4 px-6 font-semibold text-gray-900">Actions</th>
+              <table className="w-full text-sm text-gray-700">
+                <thead className="bg-[#CA3500] text-white sticky top-0 z-10">
+                  <tr>
+                    <th className="px-6 py-4 text-left font-semibold">Name</th>
+                    <th className="px-6 py-4 text-left font-semibold">Slug</th>
+                    <th className="px-6 py-4 text-left font-semibold">Status</th>
+                    <th className="px-6 py-4 text-left font-semibold">Actions</th>
                   </tr>
                 </thead>
-                <tbody>
-                  {posts.map((post) => (
-                    <tr key={post.id} className="border-b border-gray-100 hover:bg-gray-50">
-                      <td className="py-4 px-6">
-                        <div className="flex items-center space-x-3">
-                          <div className="w-10 h-10 bg-gray-200 rounded-md flex items-center justify-center">
-                            <div className="w-6 h-6 bg-gray-400 rounded"></div>
-                          </div>
-                          <div>
-                            <div className="font-medium text-gray-900">{post.title}</div>
-                            <div className="text-sm text-gray-500">{post.slug}</div>
-                          </div>
-                        </div>
+
+                <tbody className="divide-y divide-gray-100">
+                  {paginatedData.map((category) => (
+                    <tr
+                      key={category._id}
+                      className="hover:bg-orange-50 transition-colors duration-200"
+                    >
+                      <td className="px-6 py-4 font-medium text-gray-900">
+                        {category.categoryName}
                       </td>
-                      <td className="py-4 px-6 text-gray-700">{post.category}</td>
-                      <td className="py-4 px-6 text-gray-700">{post.date}</td>
-                      <td className="py-4 px-6">
-                        <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(post.status)}`}>
-                          {post.status}
+                      <td className="px-6 py-4 text-gray-600">{category.slug}</td>
+                      <td className="px-6 py-4">
+                        <span
+                          className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-sm font-medium ring-1 ring-inset ${category.isActive
+                              ? "bg-green-50 text-green-700 ring-green-600/20"
+                              : "bg-red-50 text-red-700 ring-red-600/20"
+                            }`}
+                        >
+                          <span
+                            className={`h-2 w-2 rounded-full ${category.isActive ? "bg-green-600" : "bg-red-600"
+                              }`}
+                          ></span>
+                          {category.isActive ? "Active" : "Inactive"}
                         </span>
                       </td>
-                      <td className="py-4 px-6">
-                        <div className="flex items-center space-x-2">
-                          <button className="p-1 text-gray-400 hover:text-orange-600 transition-colors">
-                            <Eye className="w-4 h-4" />
-                          </button>
-                          <button className="p-1 text-gray-400 hover:text-green-600 transition-colors">
+
+                      <td className="px-6 py-4">
+                        <div className="flex items-center space-x-3">
+                          <button
+                            title="Edit"
+                            onClick={() => router.push(`/admin/blogs-category/form?id=${category._id}`)}
+                            className="p-1 text-gray-500 hover:text-green-600 transition"
+                          >
                             <Edit className="w-4 h-4" />
                           </button>
+
                           <button
-                            onClick={() => handleDeletePost(post.id)}
-                            className="p-1 text-gray-400 hover:text-red-600 transition-colors"
+                            title="Delete"
+                            onClick={() => handleDeleteCategory(category._id)}
+                            className="p-1 text-gray-500 hover:text-red-600 transition"
                           >
                             <Trash2 className="w-4 h-4" />
                           </button>
@@ -159,77 +166,86 @@ const BlogCategory = () => {
             </div>
           </div>
 
-          {/* Mobile Cards */}
-          <div className="md:hidden">
-            {posts.map((post) => (
-              <div key={post.id} className="p-4 border-b border-gray-100 last:border-b-0">
-                <div className="flex items-start justify-between">
-                  <div className="flex items-center space-x-3 flex-1">
-                    <div className="w-10 h-10 bg-gray-200 rounded-md flex items-center justify-center flex-shrink-0">
-                      <div className="w-6 h-6 bg-gray-400 rounded"></div>
+          {/* Mobile View */}
+          <div className="md:hidden divide-y">
+            {paginatedData.map((category) => (
+              <div key={category._id} className="p-4">
+                <div className="flex justify-between items-start">
+                  <div>
+                    <div className="text-lg font-medium text-gray-900">
+                      {category.categoryName}
                     </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="font-medium text-gray-900 truncate">{post.title}</div>
-                      <div className="text-sm text-gray-500 truncate">{post.slug}</div>
-                      <div className="flex items-center space-x-4 mt-2">
-                        <span className="text-sm text-gray-600">{post.category}</span>
-                        <span className="text-sm text-gray-600">{post.date}</span>
-                      </div>
-                    </div>
+                    <div className="text-sm text-gray-500">{category.slug}</div>
                   </div>
-                  <div className="flex items-center space-x-2 ml-4">
-                    <span className={`inline-flex px-2 py-1 text-xs font-medium rounded-full ${getStatusColor(post.status)}`}>
-                      {post.status}
-                    </span>
-                    <button className="p-1 text-gray-400 hover:text-gray-600">
-                      <MoreVertical className="w-4 h-4" />
+                  <div className="flex gap-2">
+                    <button className="text-gray-400 hover:text-orange-600">
+                      <Eye className="w-4 h-4" />
+                    </button>
+                    <button className="text-gray-400 hover:text-green-600">
+                      <Edit className="w-4 h-4" />
+                    </button>
+                    <button
+                      onClick={() => handleDeleteCategory(category._id)}
+                      className="text-gray-400 hover:text-red-600"
+                    >
+                      <Trash2 className="w-4 h-4" />
                     </button>
                   </div>
-                </div>
-                <div className="flex items-center justify-end space-x-2 mt-3 pt-3 border-t border-gray-100">
-                  <button className="p-2 text-gray-400 hover:text-orange-600 transition-colors">
-                    <Eye className="w-4 h-4" />
-                  </button>
-                  <button className="p-2 text-gray-400 hover:text-green-600 transition-colors">
-                    <Edit className="w-4 h-4" />
-                  </button>
-                  <button
-                    onClick={() => handleDeletePost(post.id)}
-                    className="p-2 text-gray-400 hover:text-red-600 transition-colors"
-                  >
-                    <Trash2 className="w-4 h-4" />
-                  </button>
                 </div>
               </div>
             ))}
           </div>
 
           {/* Empty State */}
-          {posts.length === 0 && (
+          {categories.length === 0 && (
             <div className="text-center py-12">
-              <div className="text-gray-500 mb-4">No blog posts found</div>
-              <button className="inline-flex items-center px-4 py-2 bg-orange-600 text-white text-sm font-medium rounded-lg hover:bg-orange-700">
+              <div className="text-gray-500 mb-4">No categories found</div>
+              <Link
+                href="/admin/add-category"
+                className="inline-flex items-center px-4 py-2 bg-orange-600 text-white text-sm font-medium rounded-lg hover:bg-orange-700"
+              >
                 <Plus className="w-4 h-4 mr-2" />
-                Create Your First Post
-              </button>
+                Create Your First Category
+              </Link>
             </div>
           )}
         </div>
 
         {/* Pagination */}
-        {posts.length > 0 && (
+        {categories.length > 0 && (
           <div className="flex items-center justify-between mt-6">
             <div className="text-sm text-gray-600">
-              Showing 1 to {posts.length} of {posts.length} results
+              Showing {(currentPage - 1) * itemsPerPage + 1} to{" "}
+              {Math.min(currentPage * itemsPerPage, categories.length)} of{" "}
+              {categories.length} results
             </div>
             <div className="flex items-center space-x-2">
-              <button className="px-3 py-1 text-sm border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed">
+              <button
+                className="px-3 py-1 text-sm border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50"
+                onClick={() => setCurrentPage((prev) => Math.max(prev - 1, 1))}
+                disabled={currentPage === 1}
+              >
                 Previous
               </button>
-              <button className="px-3 py-1 text-sm bg-orange-600 text-white rounded-md">
-                1
-              </button>
-              <button className="px-3 py-1 text-sm border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed">
+              {[...Array(totalPages)].map((_, i) => (
+                <button
+                  key={i}
+                  className={`px-3 py-1 text-sm rounded-md ${currentPage === i + 1
+                      ? "bg-orange-600 text-white"
+                      : "border border-gray-300 hover:bg-gray-50"
+                    }`}
+                  onClick={() => setCurrentPage(i + 1)}
+                >
+                  {i + 1}
+                </button>
+              ))}
+              <button
+                className="px-3 py-1 text-sm border border-gray-300 rounded-md hover:bg-gray-50 disabled:opacity-50"
+                onClick={() =>
+                  setCurrentPage((prev) => Math.min(prev + 1, totalPages))
+                }
+                disabled={currentPage === totalPages}
+              >
                 Next
               </button>
             </div>

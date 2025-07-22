@@ -4,8 +4,8 @@ import { useState, useRef, FormEvent, ChangeEvent } from "react";
 import dynamic from "next/dynamic";
 import Link from "next/link";
 import Image from "next/image";
+import { Upload, FileText, Settings } from "lucide-react";
 
-// Dynamically import JoditEditor
 const JoditEditor = dynamic(() => import("jodit-react"), { ssr: false });
 
 type BlogForm = {
@@ -94,142 +94,145 @@ export default function AddPost() {
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 p-4 md:p-10">
-      <div className="max-w-8xl mx-auto space-y-6">
-        {/* Header */}
-        <div className="bg-white shadow p-6 rounded">
-          <h1 className="text-2xl font-bold">Add Blog</h1>
-          <p className="text-sm text-gray-600">Create a new blog post</p>
+    <div className="min-h-screen bg-gray-50 px-4 md:px-10 py-8">
+      <div className="max-w-7xl mx-auto space-y-8">
+        {/* Page Header */}
+        <div className="bg-white p-6 rounded-xl shadow-sm flex items-center gap-4 border">
+          <FileText className="text-blue-600 w-6 h-6" />
+          <div>
+            <h1 className="text-2xl font-bold text-gray-800">Create Blog Post</h1>
+            <p className="text-sm text-gray-500">Enter the blog content</p>
+          </div>
         </div>
 
-        {/* Main Form Grid */}
-        <form
-          onSubmit={handleSubmit}
-          className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start"
-        >
-          {/* Left Side: Form Fields */}
+        <form onSubmit={handleSubmit} className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+          {/* Main Form Area */}
           <div className="lg:col-span-2 space-y-6">
-            {/* Title, Slug, Content, Image */}
-            <div className="bg-white p-6 rounded shadow space-y-4">
+            {/* Blog Info */}
+            <div className="bg-white p-6 rounded-xl shadow-sm border space-y-4">
+              <h2 className="text-lg font-semibold text-gray-700">Blog Details</h2>
               <div className="grid md:grid-cols-2 gap-4">
                 <input
                   type="text"
                   name="title"
                   value={formData.title}
                   onChange={handleInputChange}
-                  placeholder="Title"
-                  className="w-full border rounded px-4 py-2"
+                  placeholder="Blog Title"
+                  className="input"
                   required
                 />
-
                 <input
                   type="text"
                   name="slug"
                   value={formData.slug}
                   onChange={handleInputChange}
                   placeholder="Slug"
-                  className="w-full border rounded px-4 py-2"
+                  className="input"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-medium mb-1">Content</label>
-                <JoditEditor
-                  ref={editorRef}
-                  value={formData.content}
-                  onChange={handleContentChange}
-                />
+                <label className="text-sm font-medium text-gray-700 block mb-2">
+                  Blog Content
+                </label>
+                <div className="border rounded-md overflow-hidden">
+                  <JoditEditor
+                    ref={editorRef}
+                    value={formData.content}
+                    onChange={handleContentChange}
+                  />
+                </div>
               </div>
 
-              <div>
-                <label className="block text-sm font-medium mb-1">Featured Image</label>
-                <div className="border rounded px-4 py-6 text-center bg-gray-50">
+              {/* Featured Image */}
+              <div className="space-y-2">
+                <label className="text-sm font-medium text-gray-700">Featured Image</label>
+                <div className="rounded border border-dashed bg-gray-100 flex flex-col items-center justify-center p-4">
                   {imagePreview ? (
                     <Image
                       src={imagePreview}
                       alt="Preview"
-                      width={500}
-                      height={300}
-                      className="w-full h-48 object-cover mb-2 rounded"
+                      width={400}
+                      height={200}
+                      className="w-full h-48 object-cover rounded-md"
                     />
                   ) : (
-                    <div className="text-sm text-gray-500">No image selected</div>
+                    <div className="text-gray-400 text-sm">No image selected</div>
                   )}
                 </div>
-                <div className="pt-2">
+                <label className="flex items-center justify-center w-full px-4 py-2 mt-2 bg-blue-100 text-blue-700 rounded cursor-pointer hover:bg-blue-200">
+                  <Upload className="w-4 h-4 mr-2" />
+                  Choose Image
                   <input
                     type="file"
                     accept="image/*"
                     onChange={handleImageChange}
-                    className="w-full mt-1"
+                    className="hidden"
                   />
-                </div>
+                </label>
               </div>
             </div>
 
             {/* SEO Section */}
-            <div className="bg-white p-6 rounded shadow space-y-4">
-              <h3 className="text-md font-semibold">SEO Settings</h3>
-
+            <div className="bg-white p-6 rounded-xl shadow-sm border space-y-4">
+              <div className="flex items-center gap-2 text-gray-700 font-semibold text-sm mb-2">
+                <Settings className="w-5 h-5" />
+                SEO & Open Graph
+              </div>
               <input
-                type="text"
                 name="seo.metaTitle"
-                placeholder="Meta Title"
                 value={formData.seo.metaTitle}
                 onChange={handleInputChange}
-                className="w-full border rounded px-4 py-2"
+                placeholder="Meta Title"
+                className="input"
               />
               <textarea
                 name="seo.metaDescription"
-                placeholder="Meta Description"
                 value={formData.seo.metaDescription}
                 onChange={handleInputChange}
-                className="w-full border rounded px-4 py-2"
+                placeholder="Meta Description"
+                className="input"
               />
               <input
-                type="text"
                 name="seo.metaKeywords"
-                placeholder="Meta Keywords"
                 value={formData.seo.metaKeywords}
                 onChange={handleInputChange}
-                className="w-full border rounded px-4 py-2"
+                placeholder="Meta Keywords"
+                className="input"
               />
-
-              <h3 className="text-md font-semibold">Open Graph</h3>
-
               <input
-                type="text"
                 name="seo.ogTitle"
-                placeholder="OG Title"
                 value={formData.seo.ogTitle}
                 onChange={handleInputChange}
-                className="w-full border rounded px-4 py-2"
+                placeholder="OG Title"
+                className="input"
               />
               <textarea
                 name="seo.ogDescription"
-                placeholder="OG Description"
                 value={formData.seo.ogDescription}
                 onChange={handleInputChange}
-                className="w-full border rounded px-4 py-2"
+                placeholder="OG Description"
+                className="input"
               />
               <input
-                type="text"
                 name="seo.ogImageUrl"
-                placeholder="OG Image URL"
                 value={formData.seo.ogImageUrl}
                 onChange={handleInputChange}
-                className="w-full border rounded px-4 py-2"
+                placeholder="OG Image URL"
+                className="input"
               />
             </div>
           </div>
 
-          {/* Right Sidebar */}
-          <div className="bg-white p-6 rounded shadow space-y-4 sticky top-24 max-h-[80vh] overflow-y-auto">
+          {/* Sidebar Settings */}
+          <div className="bg-white p-6 rounded-xl shadow-sm border space-y-4 sticky top-24 h-fit">
+            <h2 className="text-md font-semibold text-gray-700 mb-2">Post Settings</h2>
+
             <select
               name="status"
               value={formData.status}
               onChange={handleInputChange}
-              className="w-full border rounded px-4 py-2"
+              className="input"
             >
               <option value="Draft">Draft</option>
               <option value="Published">Published</option>
@@ -239,35 +242,35 @@ export default function AddPost() {
               name="category"
               value={formData.category}
               onChange={handleInputChange}
-              className="w-full border rounded px-4 py-2"
+              className="input"
             >
-              <option value="">Select a category</option>
+              <option value="">Select Category</option>
               <option value="tech">Technology</option>
               <option value="health">Health</option>
             </select>
 
-            <div className="flex items-center space-x-2">
+            <label className="flex items-center gap-2 text-sm text-gray-600">
               <input
                 type="checkbox"
                 name="featured"
                 checked={formData.featured}
                 onChange={handleInputChange}
+                className="accent-blue-600"
               />
-              <label className="text-sm">Featured</label>
-            </div>
+              Mark as Featured
+            </label>
 
-            <div className="flex justify-end gap-4 pt-6">
+            <div className="flex justify-between gap-3 pt-4">
               <Link
                 href="/admin/blogs"
-                className="bg-gray-200 text-gray-800 px-4 py-2 rounded hover:bg-gray-300"
+                className="w-1/2 text-center border border-gray-300 text-gray-600 px-4 py-2 rounded hover:bg-gray-100"
               >
                 Cancel
               </Link>
               <button
                 type="submit"
-                className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700"
-              >
-                Update Blog
+                className="w-1/2 bg-[#CA3500] text-white px-4 py-2 rounded hover:bg-[#CA3500]"
+              > Publish
               </button>
             </div>
           </div>

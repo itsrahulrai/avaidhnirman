@@ -1,12 +1,46 @@
 'use client';
-import Link from "next/link";
-import { useState, ChangeEvent, FormEvent } from "react";
 
-export default function AddCategory() {
-  const [categoryName, setCategoryName] = useState<string>("");
-  const [slug, setSlug] = useState<string>("");
-  const [isSlugTouched, setIsSlugTouched] = useState<boolean>(false);
-  const [parentCategory, setParentCategory] = useState<string>("");
+import { useEffect, useState, ChangeEvent, FormEvent } from "react";
+import { useRouter, useSearchParams } from "next/navigation";
+import toast from "react-hot-toast";
+import Link from "next/link";
+
+export default function AddBlogCategory() {
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const categoryId = searchParams.get("id");
+
+  const [categoryName, setCategoryName] = useState("");
+  const [slug, setSlug] = useState("");
+  const [isSlugTouched, setIsSlugTouched] = useState(false);
+  const [parentCategory, setParentCategory] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
+
+  // 👉 Fetch existing category when editing
+  useEffect(() => {
+    const fetchCategory = async () => {
+      if (!categoryId) return;
+      setIsLoading(true);
+      try {
+        const res = await fetch(`/api/categories/${categoryId}`);
+        const data = await res.json();
+        if (data.success) {
+          setCategoryName(data.data.categoryName || "");
+          setSlug(data.data.slug || "");
+          setParentCategory(data.data.parentCategory || "");
+        } else {
+          toast.error("Failed to fetch category.");
+        }
+      } catch (error) {
+        console.error(error);
+        toast.error("Error loading category.");
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchCategory();
+  }, [categoryId]);
 
   const handleCategoryNameChange = (e: ChangeEvent<HTMLInputElement>) => {
     const value = e.target.value;
@@ -27,33 +61,63 @@ export default function AddCategory() {
     setIsSlugTouched(true);
   };
 
-  const handleSubmit = (e: FormEvent) => {
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
+
     const categoryData = {
       categoryName,
       slug,
       parentCategory,
     };
-    console.log(categoryData);
-    // You can replace this with your API call or toast
+
+    try {
+      const res = await fetch(
+        categoryId ? `/api/categories/${categoryId}` : `/api/categories`,
+        {
+          method: categoryId ? "PATCH" : "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(categoryData),
+        }
+      );
+
+      const result = await res.json();
+
+      if (result.success) {
+        toast.success(
+          categoryId
+            ? "Category updated successfully!"
+            : "Category created successfully!"
+        );
+        router.push("/admin/blogs-category");
+      } else {
+        toast.error(result.message || "Something went wrong.");
+      }
+    } catch (error) {
+      console.error("Error:", error);
+      toast.error("An error occurred. Please try again.");
+    }
   };
 
   return (
     <div className="min-h-screen bg-gray-50 py-10 px-4">
       <div className="max-w-3xl mx-auto">
-        {/* Page Header */}
-       
-
-        {/* Form */}
         <form
           onSubmit={handleSubmit}
           className="bg-white shadow-md rounded-xl p-6 space-y-6 border border-gray-100"
         >
-           <div className="mb-6">
-          <h1 className="text-3xl font-bold text-gray-900">Add New Category</h1>
-          <p className="mt-1 text-gray-600 text-sm">Create a new blog category to organize your posts.</p>
-        </div>
-          {/* Category Name */}
+          <div className="mb-6">
+            <h1 className="text-3xl font-bold text-gray-900">
+              {categoryId ? "Edit Category" : "Add New Category"}
+            </h1>
+            <p className="mt-1 text-gray-600 text-sm">
+              {categoryId
+                ? "Update the selected blog category."
+                : "Create a new blog category to organize your posts."}
+            </p>
+          </div>
+
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Category Name <span className="text-red-500">*</span>
@@ -68,7 +132,6 @@ export default function AddCategory() {
             />
           </div>
 
-          {/* Slug */}
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-1">
               Slug <span className="text-red-500">*</span>
@@ -83,38 +146,25 @@ export default function AddCategory() {
             />
           </div>
 
-          {/* Parent Category */}
-          <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">
-              Parent Category
-            </label>
-            <select
-              value={parentCategory}
-              onChange={(e) => setParentCategory(e.target.value)}
-              className="w-full px-4 py-2 rounded-md border border-gray-300 focus:ring-2 focus:ring-orange-500 focus:outline-none"
-            >
-              <option value="">None</option>
-              <option value="technology">Technology</option>
-              <option value="lifestyle">Lifestyle</option>
-              <option value="business">Business</option>
-            </select>
-          </div>
+          {/* Optional: Add parentCategory input if you use it */}
+         
 
-          {/* Buttons */}
-          <div className="flex justify-end gap-3 pt-4">
+          <div className="flex justify-between items-center border-t pt-6">
             <Link
-              href="/admin/blogs-category"
-              className="inline-block px-4 py-2 rounded-md bg-gray-200 text-gray-800 hover:bg-gray-300 transition"
+              href="/admin/blogs"
+              className="px-4 py-2 rounded-md bg-gray-200 hover:bg-gray-300 text-gray-800"
             >
               Cancel
             </Link>
             <button
               type="submit"
-              className="inline-block px-5 py-2 rounded-md bg-orange-600 text-white hover:bg-orange-700 transition"
+              className="px-6 py-2 rounded-md  bg-orange-600 text-white hover:bg-orange-700  shadow-sm"
             >
-              Save Category
+              Submit
             </button>
           </div>
+
+
         </form>
       </div>
     </div>
