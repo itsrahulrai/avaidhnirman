@@ -5,6 +5,7 @@ import { Phone, Menu, X } from 'lucide-react';
 import { MdOutlineEmail } from 'react-icons/md';
 import Link from 'next/link';
 import Image from 'next/image';
+  import { FaWhatsapp } from 'react-icons/fa';
 
 const Header = () => {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -49,9 +50,16 @@ const Header = () => {
                 <MdOutlineEmail className="w-6 h-6 text-red-800" />
                 <span className="text-lg font-medium">avaidhnirman@gmail.com</span>
               </div>
-              <button className="bg-orange-500 text-white px-5 py-2 rounded text-lg uppercase font-medium hover:bg-orange-600 transition-colors">
-                Whatsapp Now
-              </button>
+            <button className="
+              bg-orange-500 text-white px-6 py-3 rounded-lg
+              text-lg uppercase font-medium
+              hover:bg-orange-600 transition-all duration-300
+              flex items-center justify-center gap-2
+              shadow-md hover:shadow-lg
+            ">
+              <FaWhatsapp className="w-5 h-5" />
+              Whatsapp Now
+            </button>
             </div>
 
             {/* Mobile Menu Button */}

@@ -15,12 +15,11 @@ const blogSchema = new Schema(
       lowercase: true,
       trim: true,
     },
-   category: {
-        type: Schema.Types.ObjectId,
-        ref: 'Category', 
-        required: [true, 'Category is required'],
-        },
-
+    category: {
+      type: Schema.Types.ObjectId,
+      ref: 'Category',
+      required: [true, 'Category is required'],
+    },
     imageUrl: {
       type: String,
       default: '',
@@ -36,6 +35,30 @@ const blogSchema = new Schema(
     },
     content: {
       type: String,
+    },
+    shortContent: {
+      type: String,
+      trim: true,
+      maxlength: 300,
+    },
+    metaTitle: {
+      type: String,
+      trim: true,
+      maxlength: 60,
+    },
+    metaKeywords: {
+      type: String,
+      trim: true,
+    },
+    metaDescription: {
+      type: String,
+      trim: true,
+      maxlength: 160,
+    },
+
+    isFeatured: {
+      type: Boolean,
+      default: false,
     },
   },
   {

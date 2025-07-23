@@ -159,6 +159,7 @@ const BlogCategory = () => {
                           </button>
                         </div>
                       </td>
+                      
                     </tr>
                   ))}
                 </tbody>

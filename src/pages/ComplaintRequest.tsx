@@ -124,30 +124,50 @@ export default function ComplaintRequestPage() {
     setFiles((prev) => prev.filter((_, i) => i !== index));
   };
 
-  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
+const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
+  e.preventDefault();
 
-    if (!validateForm()) {
-      return;
-    }
+  if (!validateForm()) return;
+  setIsSubmitting(true);
 
-    setIsSubmitting(true);
+  try {
+    const form = new FormData();
+    form.append("fullName", formData.fullName);
+    form.append("email", formData.email);
+    form.append("phone", formData.phone);
+    form.append("location", formData.location);
+    form.append("subject", formData.subject);
+    form.append("message", formData.message);
 
-    // Simulate form submission
-    setTimeout(() => {
-      alert("Complaint submitted successfully! We'll get back to you soon.");
-      setFormData({
-        fullName: "",
-        email: "",
-        phone: "",
-        location: "",
-        subject: "",
-        message: "",
-      });
-      setFiles([]);
-      setIsSubmitting(false);
-    }, 2000);
-  };
+    files.forEach((file, index) => {
+      form.append("images", file); // support multiple images
+    });
+
+    const res = await fetch("/api/complaints", {
+      method: "POST",
+      body: form,
+    });
+
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || "Something went wrong");
+
+    alert("Complaint submitted successfully!");
+    setFormData({
+      fullName: "",
+      email: "",
+      phone: "",
+      location: "",
+      subject: "",
+      message: "",
+    });
+    setFiles([]);
+  } catch (err: any) {
+    alert("Failed to submit complaint: " + err.message);
+  } finally {
+    setIsSubmitting(false);
+  }
+};
+
 
   const inputClass = `w-full bg-transparent border-b border-gray-600 py-3 px-0 text-white placeholder-gray-400 focus:border-blue-400 focus:outline-none transition-colors duration-300 ${errors ? "border-gray-500" : ""
     }`;
@@ -172,13 +192,13 @@ export default function ComplaintRequestPage() {
               <div className="absolute -top-4 -left-4 w-32 h-32 border-2 border-blue-500 rounded-full opacity-20"></div>
             </div>
 
-            <p className="text-gray-300 text-lg leading-relaxed max-w-md mx-auto lg:mx-0">
+            <p className="text-white text-lg leading-relaxed max-w-md mx-auto lg:mx-0">
               We take your concerns seriously and are committed to resolving
               them promptly. Please provide detailed information about your
               complaint so we can assist you better.
             </p>
 
-            <div className="mt-8 space-y-4 text-gray-400">
+            <div className="mt-8 space-y-4 text-white">
               <div className="flex items-center justify-center lg:justify-start">
                 <div className="w-2 h-2 bg-blue-500 rounded-full mr-3"></div>
                 <span>Response within 24-48 hours</span>
@@ -192,180 +212,183 @@ export default function ComplaintRequestPage() {
                 <span>Professional resolution process</span>
               </div>
             </div>
+
+            
           </div>
 
           {/* Form Section */}
-          <div className="order-2 lg:order-1 ">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 bg-[#1f5175] p-10 rounded-lg">
-              {/* Full Name */}
-              <div>
-                <input
-                  type="text"
-                  name="fullName"
-                  placeholder="Full Name"
-                  value={formData.fullName}
-                  onChange={handleInputChange}
-                  className={inputClass}
-                />
-                {errors.fullName && (
-                  <div className="flex items-center mt-2 text-gray-400 text-sm">
-                    <AlertCircle className="w-4 h-4 mr-1" />
-                    {errors.fullName}
-                  </div>
-                )}
-              </div>
-
-              {/* Email */}
-              <div>
-                <input
-                  type="email"
-                  name="email"
-                  placeholder="Your Email"
-                  value={formData.email}
-                  onChange={handleInputChange}
-                  className={inputClass}
-                />
-                {errors.email && (
-                  <div className="flex items-center mt-2 text-red-400 text-sm">
-                    <AlertCircle className="w-4 h-4 mr-1" />
-                    {errors.email}
-                  </div>
-                )}
-              </div>
-
-              {/* Phone */}
-              <div>
-                <input
-                  type="tel"
-                  name="phone"
-                  placeholder="Phone Number"
-                  value={formData.phone}
-                  onChange={handleInputChange}
-                  className={inputClass}
-                />
-                {errors.phone && (
-                  <div className="flex items-center mt-2 text-red-400 text-sm">
-                    <AlertCircle className="w-4 h-4 mr-1" />
-                    {errors.phone}
-                  </div>
-                )}
-              </div>
-
-              {/* Location */}
-              <div>
-                <input
-                  type="text"
-                  name="location"
-                  placeholder="Location"
-                  value={formData.location}
-                  onChange={handleInputChange}
-                  className={inputClass}
-                />
-                {errors.location && (
-                  <div className="flex items-center mt-2 text-red-400 text-sm">
-                    <AlertCircle className="w-4 h-4 mr-1" />
-                    {errors.location}
-                  </div>
-                )}
-              </div>
-
-              {/* Subject */}
-              <div className="md:col-span-2">
-                <input
-                  type="text"
-                  name="subject"
-                  placeholder="Subject"
-                  value={formData.subject}
-                  onChange={handleInputChange}
-                  className={inputClass}
-                />
-                {errors.subject && (
-                  <div className="flex items-center mt-2 text-red-400 text-sm">
-                    <AlertCircle className="w-4 h-4 mr-1" />
-                    {errors.subject}
-                  </div>
-                )}
-              </div>
-
-              {/* Message */}
-              <div className="md:col-span-2">
-                <textarea
-                  name="message"
-                  placeholder="Share your complaint details"
-                  value={formData.message}
-                  onChange={handleInputChange}
-                  rows={4}
-                  className={textareaClass}
-                />
-                {errors.message && (
-                  <div className="flex items-center mt-2 text-red-400 text-sm">
-                    <AlertCircle className="w-4 h-4 mr-1" />
-                    {errors.message}
-                  </div>
-                )}
-              </div>
-
-              {/* File Upload */}
-              <div className="md:col-span-2">
-                <label className="block text-gray-300 text-sm mb-3">
-                  Upload Images (Optional - Max 5 files, 10MB each)
-                </label>
-                <div className="border-2 border-dashed border-gray-600 rounded-lg p-6 text-center hover:border-gray-500 transition-colors">
-                  <input
-                    type="file"
-                    multiple
-                    accept="image/*"
-                    onChange={handleFileUpload}
-                    className="hidden"
-                    id="file-upload"
-                  />
-                  <label htmlFor="file-upload" className="cursor-pointer">
-                    <Upload className="w-8 h-8 text-gray-400 mx-auto mb-2" />
-                    <p className="text-gray-400">Click to upload images</p>
-                  </label>
+         <div className="order-2 lg:order-1">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6 bg-white p-10 rounded-xl shadow-lg"> {/* Increased rounded and added shadow */}
+            {/* Full Name */}
+            <div>
+              <input
+                type="text"
+                name="fullName"
+                placeholder="Full Name"
+                value={formData.fullName}
+                onChange={handleInputChange}
+                className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-200 text-gray-800 placeholder-gray-500" // Updated inputClass
+              />
+              {errors.fullName && (
+                <div className="flex items-center mt-2 text-red-600 text-sm"> {/* Stronger red for errors */}
+                  <AlertCircle className="w-4 h-4 mr-1" />
+                  {errors.fullName}
                 </div>
+              )}
+            </div>
 
-                {/* File Preview */}
-                {files.length > 0 && (
-                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-3 mt-4">
-                    {files.map((file, index) => (
-                      <div key={index} className="relative group">
-                        <Image
-                          width={20}
-                          height={20}
-                          src={URL.createObjectURL(file)}
-                          alt={`Upload ${index + 1}`}
-                          className="w-full h-20 object-cover rounded-lg"
-                        />
-                        <button
-                          type="button"
-                          onClick={() => removeFile(index)}
-                          className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity"
-                        >
-                          <X className="w-4 h-4" />
-                        </button>
-                        <p className="text-xs text-gray-400 mt-1 truncate">
-                          {file?.name}
-                        </p>
-                      </div>
-                    ))}
-                  </div>
-                )}
+            {/* Email */}
+            <div>
+              <input
+                type="email"
+                name="email"
+                placeholder="Your Email"
+                value={formData.email}
+                onChange={handleInputChange}
+                className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-200 text-gray-800 placeholder-gray-500"
+              />
+              {errors.email && (
+                <div className="flex items-center mt-2 text-red-600 text-sm">
+                  <AlertCircle className="w-4 h-4 mr-1" />
+                  {errors.email}
+                </div>
+              )}
+            </div>
+
+            {/* Phone */}
+            <div>
+              <input
+                type="tel"
+                name="phone"
+                placeholder="Phone Number"
+                value={formData.phone}
+                onChange={handleInputChange}
+                className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-200 text-gray-800 placeholder-gray-500"
+              />
+              {errors.phone && (
+                <div className="flex items-center mt-2 text-red-600 text-sm">
+                  <AlertCircle className="w-4 h-4 mr-1" />
+                  {errors.phone}
+                </div>
+              )}
+            </div>
+
+            {/* Location */}
+            <div>
+              <input
+                type="text"
+                name="location"
+                placeholder="Location"
+                value={formData.location}
+                onChange={handleInputChange}
+                className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-200 text-gray-800 placeholder-gray-500"
+              />
+              {errors.location && (
+                <div className="flex items-center mt-2 text-red-600 text-sm">
+                  <AlertCircle className="w-4 h-4 mr-1" />
+                  {errors.location}
+                </div>
+              )}
+            </div>
+
+            {/* Subject */}
+            <div className="md:col-span-2">
+              <input
+                type="text"
+                name="subject"
+                placeholder="Subject"
+                value={formData.subject}
+                onChange={handleInputChange}
+                className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-200 text-gray-800 placeholder-gray-500"
+              />
+              {errors.subject && (
+                <div className="flex items-center mt-2 text-red-600 text-sm">
+                  <AlertCircle className="w-4 h-4 mr-1" />
+                  {errors.subject}
+                </div>
+              )}
+            </div>
+
+            {/* Message */}
+            <div className="md:col-span-2">
+              <textarea
+                name="message"
+                placeholder="Share your complaint details"
+                value={formData.message}
+                onChange={handleInputChange}
+                rows={4}
+                className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition duration-200 text-gray-800 placeholder-gray-500 resize-y" // Added resize-y
+              />
+              {errors.message && (
+                <div className="flex items-center mt-2 text-red-600 text-sm">
+                  <AlertCircle className="w-4 h-4 mr-1" />
+                  {errors.message}
+                </div>
+              )}
+            </div>
+
+            {/* File Upload */}
+            <div className="md:col-span-2">
+              <label className="block text-gray-700 text-sm font-medium mb-3"> {/* Changed label color and added font-medium */}
+                Upload Images (Optional - Max 5 files, 10MB each)
+              </label>
+              <div className="border-2 border-dashed border-blue-300 rounded-lg p-6 text-center hover:border-blue-500 transition-colors cursor-pointer bg-blue-50"> {/* Softer blue border and background */}
+                <input
+                  type="file"
+                  multiple
+                  accept="image/*"
+                  onChange={handleFileUpload}
+                  className="hidden"
+                  id="file-upload"
+                />
+                <label htmlFor="file-upload" className="cursor-pointer block"> {/* Added block to label */}
+                  <Upload className="w-8 h-8 text-blue-500 mx-auto mb-2" /> {/* Blue icon */}
+                  <p className="text-blue-600 font-semibold">Click to upload images</p> {/* Blue text, bold */}
+                  <p className="text-gray-500 text-xs mt-1">PNG, JPG, GIF up to 10MB each</p> {/* Added hint */}
+                </label>
               </div>
 
-              {/* Submit Button */}
-              <div className="md:col-span-2">
-                <button
-                  type="button"
-                  onClick={() => handleSubmit}
-                  disabled={isSubmitting}
-                  className="w-full bg-gradient-to-r from-orange-500 to-blue-500 text-white py-3 px-6 rounded-lg font-semibold hover:from-orange-600 hover:to-blue-600 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed transform hover:scale-105"
-                >
-                  {isSubmitting ? "SUBMITTING..." : "SUBMIT COMPLAINT"}
-                </button>
-              </div>
+              {/* File Preview */}
+              {files.length > 0 && (
+                <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 mt-4"> {/* Adjusted grid for more columns */}
+                  {files.map((file, index) => (
+                    <div key={index} className="relative group bg-gray-100 rounded-lg p-2 flex flex-col items-center justify-center"> {/* Added padding and bg for preview items */}
+                      <Image
+                        width={80} // Increased image size for better preview
+                        height={80}
+                        src={URL.createObjectURL(file)}
+                        alt={`Upload ${index + 1}`}
+                        className="w-20 h-20 object-cover rounded-lg mb-2"
+                      />
+                      <button
+                        type="button"
+                        onClick={() => removeFile(index)}
+                        className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 opacity-0 group-hover:opacity-100 transition-opacity z-10" // Added z-10 to keep button on top
+                      >
+                        <X className="w-4 h-4" />
+                      </button>
+                      <p className="text-xs text-gray-700 mt-1 truncate w-full text-center"> {/* Darker text, centered */}
+                        {file?.name}
+                      </p>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Submit Button */}
+            <div className="md:col-span-2 mt-4"> {/* Added top margin for spacing */}
+              <button
+                type="button"
+                onClick={handleSubmit} // Fixed onClick to properly call handleSubmit
+                disabled={isSubmitting}
+                className="w-full bg-gradient-to-r from-orange-500 to-blue-600 text-white py-4 px-6 rounded-lg font-bold text-lg hover:from-orange-600 hover:to-blue-700 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed shadow-lg hover:shadow-xl" // Enhanced button styles
+              >
+                {isSubmitting ? "SUBMITTING..." : "SUBMIT COMPLAINT"}
+              </button>
             </div>
           </div>
+        </div>
         </div>
       </div>
     </div>
