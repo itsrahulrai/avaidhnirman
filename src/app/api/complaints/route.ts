@@ -54,3 +54,15 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: 'Something went wrong' }, { status: 500 });
   }
 }
+
+
+export async function GET(req: NextRequest) {
+  try {
+    await dbConnect();
+    const complaints = await ComplaintModel.find({});
+    return NextResponse.json({ success: true, data: complaints }, { status: 200 });
+  } catch (error: any) {
+    console.error("Error fetching complaints:", error);
+    return NextResponse.json({ success: false, message: error.message }, { status: 500 });
+  }
+}

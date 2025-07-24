@@ -49,7 +49,7 @@ function DashbordSidebar() {
       ],
     },
     {
-      label: 'Enquiry Data',
+      label: 'Complaints',
       icon: MessageCircle,
       link: '/admin/enquiries',
     },
