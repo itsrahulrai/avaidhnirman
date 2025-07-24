@@ -3,6 +3,7 @@ import React from "react";
 import { useState } from "react";
 import { Upload, X, AlertCircle } from "lucide-react";
 import Image from "next/image";
+import toast from "react-hot-toast";
 
 
 interface ErrorInterface {
@@ -124,6 +125,8 @@ export default function ComplaintRequestPage() {
     setFiles((prev) => prev.filter((_, i) => i !== index));
   };
 
+
+
 const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
   e.preventDefault();
 
@@ -139,7 +142,7 @@ const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     form.append("subject", formData.subject);
     form.append("message", formData.message);
 
-    files.forEach((file, index) => {
+    files.forEach((file) => {
       form.append("images", file); // support multiple images
     });
 
@@ -151,7 +154,7 @@ const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     const data = await res.json();
     if (!res.ok) throw new Error(data.error || "Something went wrong");
 
-    alert("Complaint submitted successfully!");
+    toast.success("Complaint submitted successfully!");
     setFormData({
       fullName: "",
       email: "",
@@ -162,11 +165,12 @@ const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     });
     setFiles([]);
   } catch (err: any) {
-    alert("Failed to submit complaint: " + err.message);
+    toast.error("Failed to submit complaint: " + err.message);
   } finally {
     setIsSubmitting(false);
   }
 };
+
 
 
   const inputClass = `w-full bg-transparent border-b border-gray-600 py-3 px-0 text-white placeholder-gray-400 focus:border-blue-400 focus:outline-none transition-colors duration-300 ${errors ? "border-gray-500" : ""
